@@ -1,0 +1,29 @@
+#!/bin/bash
+
+if [ -z $1 ];then
+	printf "Usage: \n\t$0 [python source file][swtich] 1: To C code 2: to bytecode 3: to C and bytecode\n"
+	exit 0
+fi
+
+source_file=$1
+tag=$2
+
+fn_ext=$(echo ${source_file} | awk -F '.' '{print $2}'| tr -d '\r\n')
+if [ -z ${fn_ext} ]; then
+        fn=${source_file}
+elif [ ${fn_ext} == "py" ]; then
+	fn=$(echo ${source_file} | awk -F '.' '{print $1}')
+fi
+
+if [ ${tag} -eq 1 ]; then
+	printf "Transfer python source to C.\n"
+	cython3 --embed -o ${fn}.c ${source_file}
+elif [ ${tag} -eq 2 ]; then
+	printf "Transfer python source to bytecode.\n"
+	gcc -Os -I /usr/include/python3.6m -o ${fn} ${fn}.c -lpython3.6m -lpthread -lm -lutil -ldl
+elif [ ${tag} -eq 3 ]; then
+	printf "Transfer python source to C sode and bytecode\n"
+	cython3 --embed -o ${fn}.c ${source_file}
+	gcc -Os -I /usr/include/python3.6m -o ${fn} ${fn}.c -lpython3.6m -lpthread -lm -lutil -ldl
+fi
+printf "Transfer End\n"
